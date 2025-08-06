@@ -3,14 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>ExpenseWise</title>
+    <title>Smart Expense Tracker</title>
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- FontAwesome 5 for modern icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="{%static 'css/style.css' %}">
     {% block link %}
 
@@ -28,127 +29,837 @@
     {% endblock css %}
 
     <style>
-        .content {
+        /* Modern Sidebar Styles */
+        .wrapper {
+            display: flex;
             width: 100%;
-            overflow-y: scroll;
-            /* Enable vertical scrolling for content */
-            height: 100vh;
-            /* Set the content height to 100% of the viewport height */
+            align-items: stretch;
         }
 
-        #sidebar {
-            position: sticky;
-            top: 0;
-            height: 100%;
-            z-index: 2;
-            /* Set the sidebar height to 100% of the viewport height */
-
-            /* Enable vertical scrolling for the sidebar */
+        .modern-sidebar {
+            min-width: 280px;
+            max-width: 280px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transition: all 0.3s;
+            min-height: 100vh;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: relative;
         }
 
-        .black-text {
-            color: black;
-            font-weight: bold;
-
+        .modern-sidebar.active {
+            margin-left: -280px;
         }
 
-        #sidebar .custom-menu {
+        .sidebar-header {
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-icon {
+            font-size: 1.8rem;
+            margin-right: 10px;
+            color: white;
+        }
+
+        .brand-text {
+            color: white;
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .btn-toggle {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .btn-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .sidebar-content {
+            padding: 0;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .user-profile {
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            color: white;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .user-role {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .user-profile .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-top: 5px;
+            min-width: 180px;
+            z-index: 1050;
+            display: none;
             position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: white;
         }
 
-        .logo {
-            font-size: 25px;
+        .dropdown-menu.show {
+            display: block;
         }
 
-        .sidebar-collapsed .content {
-            margin: auto;
+        .dropdown-item {
+            padding: 10px 15px;
+            transition: all 0.2s;
+            color: #333;
         }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+            color: #333;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            margin-right: 8px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-section {
+            margin: 0;
+            padding: 0;
+        }
+
+        .section-title {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 20px 20px 10px;
+            margin: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .section-title i {
+            margin-right: 8px;
+            width: 16px;
+        }
+
+        .nav-item {
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9) !important;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white !important;
+            border-left-color: rgba(255,255,255,0.5);
+            text-decoration: none;
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white !important;
+            border-left-color: white;
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 12px;
+            text-align: center;
+        }
+
+        .nav-link span {
+            flex: 1;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+        }
+
+        .content {
+            flex: 1;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            padding: 0;
+        }
+
+        .dropdown-menu {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            margin-right: 8px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .modern-sidebar {
+                margin-left: -280px;
+            }
+            
+            .modern-sidebar.active {
+                margin-left: 0;
+            }
+            
+            .content {
+                width: 100%;
+            }
+        }
+
+        /* Custom scrollbar for sidebar */
+        .sidebar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* Fix for unwanted checkbox/square icons */
+        .nav-link::before,
+        .nav-item::before,
+        .section-title::before,
+        li::before {
+            content: none !important;
+            display: none !important;
+        }
+
+        /* Ensure FontAwesome icons display correctly */
+        .nav-link i,
+        .section-title i,
+        .brand-icon,
+        .user-avatar i {
+            font-family: "Font Awesome 5 Free", "FontAwesome" !important;
+            font-weight: 900 !important;
+            display: inline-block !important;
+            font-style: normal !important;
+            font-variant: normal !important;
+            text-rendering: auto !important;
+            line-height: 1 !important;
+        }
+
+        /* Remove any unwanted list styles */
+        ul, li {
+            list-style: none !important;
+            list-style-type: none !important;
+        }
+
+        /* Override any conflicting CSS */
+        .sidebar-nav li::marker {
+            content: none !important;
+        }
+
+        .sidebar-nav li {
+            list-style: none !important;
+            list-style-type: none !important;
+            background-image: none !important;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        /* Enhanced Button Styles */
+        .btn {
+            border-radius: 25px !important;
+            font-weight: 600 !important;
+            padding: 10px 25px !important;
+            transition: all 0.3s ease !important;
+            border: 2px solid transparent !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+            z-index: 0;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span, .btn i {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+        }
+
+        .btn:active {
+            transform: translateY(0) !important;
+        }
+
+        /* Primary Button */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+            color: white !important;
+        }
+
+        /* Secondary Button */
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #545b62 100%) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #484e53 100%) !important;
+            color: white !important;
+        }
+
+        /* Success Button */
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, #1abc9c 100%) !important;
+            color: white !important;
+        }
+
+        /* Danger Button */
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c82333 0%, #d91a72 100%) !important;
+            color: white !important;
+        }
+
+        /* Warning Button */
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%) !important;
+            border: none !important;
+            color: #212529 !important;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #e0a800 0%, #e8590c 100%) !important;
+            color: #212529 !important;
+        }
+
+        /* Info Button */
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #138496 0%, #6610f2 100%) !important;
+            color: white !important;
+        }
+
+        /* Light Button */
+        .btn-light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+            border: 2px solid #dee2e6 !important;
+            color: #495057 !important;
+        }
+
+        .btn-light:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%) !important;
+            border-color: #adb5bd !important;
+            color: #495057 !important;
+        }
+
+        /* Outline Buttons */
+        .btn-outline-primary {
+            background: transparent !important;
+            border: 2px solid #667eea !important;
+            color: #667eea !important;
+        }
+
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-color: #667eea !important;
+            color: white !important;
+        }
+
+        .btn-outline-secondary {
+            background: transparent !important;
+            border: 2px solid #6c757d !important;
+            color: #6c757d !important;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d !important;
+            border-color: #6c757d !important;
+            color: white !important;
+        }
+
+        .btn-outline-success {
+            background: transparent !important;
+            border: 2px solid #28a745 !important;
+            color: #28a745 !important;
+        }
+
+        .btn-outline-success:hover {
+            background: #28a745 !important;
+            border-color: #28a745 !important;
+            color: white !important;
+        }
+
+        .btn-outline-danger {
+            background: transparent !important;
+            border: 2px solid #dc3545 !important;
+            color: #dc3545 !important;
+        }
+
+        .btn-outline-danger:hover {
+            background: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+        }
+
+        .btn-outline-warning {
+            background: transparent !important;
+            border: 2px solid #ffc107 !important;
+            color: #ffc107 !important;
+        }
+
+        .btn-outline-warning:hover {
+            background: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: #212529 !important;
+        }
+
+        .btn-outline-info {
+            background: transparent !important;
+            border: 2px solid #17a2b8 !important;
+            color: #17a2b8 !important;
+        }
+
+        .btn-outline-info:hover {
+            background: #17a2b8 !important;
+            border-color: #17a2b8 !important;
+            color: white !important;
+        }
+
+        .btn-outline-light {
+            background: transparent !important;
+            border: 2px solid rgba(255,255,255,0.8) !important;
+            color: rgba(255,255,255,0.9) !important;
+        }
+
+        .btn-outline-light:hover {
+            background: rgba(255,255,255,0.2) !important;
+            border-color: white !important;
+            color: white !important;
+        }
+
+        /* Button Sizes */
+        .btn-lg {
+            padding: 15px 35px !important;
+            font-size: 1.1rem !important;
+            border-radius: 30px !important;
+        }
+
+        .btn-sm {
+            padding: 6px 15px !important;
+            font-size: 0.875rem !important;
+            border-radius: 18px !important;
+        }
+
+        /* Special Button Styles */
+        .btn-group .btn {
+            border-radius: 20px !important;
+            margin: 0 2px !important;
+        }
+
+        .btn-group .btn:first-child {
+            margin-left: 0 !important;
+        }
+
+        .btn-group .btn:last-child {
+            margin-right: 0 !important;
+        }
+
+        /* Table Action Buttons */
+        .btn-group-sm .btn {
+            padding: 5px 10px !important;
+            font-size: 0.8rem !important;
+            border-radius: 15px !important;
+            min-width: 36px !important;
+            height: 32px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .btn-group-sm .btn i {
+            font-size: 0.9rem !important;
+        }
+
+        /* Icon-only buttons */
+        .btn i:only-child {
+            margin: 0 !important;
+        }
+
+        /* Filter and Search Buttons */
+        .btn-filter {
+            background: rgba(255,255,255,0.9) !important;
+            border: 2px solid #e9ecef !important;
+            color: #495057 !important;
+            border-radius: 20px !important;
+            padding: 8px 16px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-filter:hover {
+            background: #f8f9fa !important;
+            border-color: #dee2e6 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
+
+        .btn-filter.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-color: #667eea !important;
+            color: white !important;
+        }
+
+        /* Floating Action Button Style */
+        .btn-floating {
+            width: 56px !important;
+            height: 56px !important;
+            border-radius: 50% !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            z-index: 1000 !important;
+        }
+
+        .btn-floating:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25) !important;
+        }
+
+        /* Pulse effect for important buttons */
+        .btn-pulse {
+            animation: pulse 2s infinite !important;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+
+        /* Card action buttons */
+        .card .btn {
+            border-radius: 20px !important;
+        }
+
+        /* Breadcrumb links as buttons */
+        .breadcrumb-item a {
+            padding: 4px 8px !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .breadcrumb-item a:hover {
+            background: rgba(102, 126, 234, 0.1) !important;
+            text-decoration: none !important;
+        }
+
+        /* Toggle Button in Sidebar */
+        .btn-toggle {
+            background: rgba(255,255,255,0.2) !important;
+            border: 2px solid rgba(255,255,255,0.3) !important;
+            color: white !important;
+            padding: 8px 12px !important;
+            border-radius: 15px !important;
+            transition: all 0.3s !important;
+        }
+
+        .btn-toggle:hover {
+            background: rgba(255,255,255,0.3) !important;
+            border-color: rgba(255,255,255,0.5) !important;
+            color: white !important;
+            transform: scale(1.05) !important;
+        }
+    </style>
     </style>
 </head>
 
 <body>
-
     <div class="wrapper d-flex align-items-stretch">
-        <nav id="sidebar">
-            <div class="custom-menu">
-                <button type="button" id="sidebarCollapse" class="btn btn-primary">
-                    <i class="fa fa-bars"></i>
-                    <span class="sr-only">Toggle Menu</span>
-                </button>
+        <!-- Enhanced Modern Sidebar -->
+        <nav id="sidebar" class="modern-sidebar">
+            <div class="sidebar-header">
+                <div class="brand-section">
+                    <i class="fas fa-wallet brand-icon"></i>
+                    <h4 class="brand-text">Smart Expense Tracker</h4>
+                </div>
             </div>
-            <div class="p-4 pt-5">
-                <h1><a href="/" class="logo">ExpenseWise</a></h1>
-                <ul class="list-unstyled components mb-5">
-                    <h6 class="sidebar-heading mt-4 mb-1 black-text ">
-                        Dashboard
-                    </h6>
+            
+            <div class="sidebar-content">
+                <!-- User Profile Section -->
+                {% if request.user.is_authenticated %}
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <h6 class="user-name">{{ request.user.username|capfirst }}</h6>
+                        <small class="user-role">Account Holder</small>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" 
+                                id="userDropdownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdownBtn">
+                            <a class="dropdown-item" href="{% url 'account' %}">
+                                <i class="fas fa-user-circle text-primary"></i> My Profile
+                            </a>
+                            <a class="dropdown-item" href="{% url 'preferences' %}">
+                                <i class="fas fa-cog text-info"></i> Settings
+                            </a>
+                            <a class="dropdown-item" href="{% url 'income' %}">
+                                <i class="fas fa-money-bill-wave text-success"></i> Income
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt text-danger"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Navigation Menu -->
+                <ul class="sidebar-nav">
+                    <li class="nav-section">
+                        <h6 class="section-title">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </h6>
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link p-2" href="{%url 'expenses'%}">
-                            Expenses
+                        <a class="nav-link" href="{% url 'expenses' %}">
+                            <i class="fas fa-home"></i>
+                            <span>My Expenses</span>
                         </a>
                     </li>
-                    <li class="nav-item p-2">
-                        <a class="nav-link" href="{%url 'income'%}">
-                            Income
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'add-expenses' %}">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Add Expense</span>
                         </a>
                     </li>
-                    <li class="nav-item p-2">
-                        <a class="nav-link" href="{%url 'forecast'%}">
-                            Forecast Expenses
+                    <li class="nav-item">
+                        <a class="nav-link" href="/forecast/">
+                            <i class="fas fa-crystal-ball"></i>
+                            <span>AI Forecast</span>
+                            <span class="badge badge-success ml-auto">AI</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'income' %}">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Income</span>
                         </a>
                     </li>
 
-                    <h6 class="sidebar-heading mt-4 mb-1 black-text ">
-                        SUMMARY
-                    </h6>
+                    <li class="nav-section">
+                        <h6 class="section-title">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </h6>
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link p-2" href="{%url 'stats'%}">
-                            Expense Summary
+                        <a class="nav-link" href="{% url 'stats' %}">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Expense Summary</span>
                         </a>
                     </li>
-                    <li class="nav-item p-2">
-                        <a class="nav-link" href="{%url 'income-summary'%}">
-                            Income summary
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'income-summary' %}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Income Summary</span>
                         </a>
                     </li>
-                    <li class="nav-item p-2">
-                        <a class="nav-link" href="{%url 'report'%}">
-                            Reports
-                        </a>
-                    </li>
-                    <li class="nav-item p-2">
-                        <a class="nav-link" href="{%url 'list_goals'%}">
-                            Goals
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'report' %}">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Reports</span>
                         </a>
                     </li>
 
-
-                    <h6 class="sidebar-heading mt-4 mb-1 black-text ">
-                        Settings
-                    </h6>
+                    <li class="nav-section">
+                        <h6 class="section-title">
+                            <i class="fas fa-bullseye"></i> Goals
+                        </h6>
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link p-2" href="{%url 'preferences'%}">
-                            General
+                        <a class="nav-link" href="{% url 'list_goals' %}">
+                            <i class="fas fa-target"></i>
+                            <span>My Goals</span>
                         </a>
                     </li>
-                    <li class="nav-item p-2">
-                        <a class="nav-link" href="{%url 'account' %}">
-                            Account
+
+                    {% if not request.user.is_authenticated %}
+                    <li class="nav-section">
+                        <h6 class="section-title">
+                            <i class="fas fa-user"></i> Account
+                        </h6>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Register</span>
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
-
             </div>
         </nav>
 
+        <!-- Main Content Area -->
         <div class="content">
-            {% include "navbar.html" %}
-            <div class="container-fluid  ">
+            <div class="main-content">
                 {% block content %} {% endblock %}
             </div>
         </div>
-
-        <!-- Page Content  -->
     </div>
 
     <script src="{%static 'js/jquery.min.js' %}"></script>
@@ -168,6 +879,89 @@
         {% block js %}
 
         {% endblock js %}
+        
+        // Enhanced Sidebar Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle functionality removed as button is no longer needed
+            const sidebar = document.getElementById('sidebar');
+            
+            // Add active class to current page
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+                
+                // Also check for partial matches
+                if (currentPath !== '/' && link.getAttribute('href') !== '/' && 
+                    currentPath.includes(link.getAttribute('href'))) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Smooth hover effects
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.transform = 'translateX(5px)';
+                    }
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.transform = 'translateX(0)';
+                    }
+                });
+            });
+            
+            // User dropdown functionality
+            const userDropdownBtn = document.getElementById('userDropdownBtn');
+            const userDropdownMenu = userDropdownBtn ? userDropdownBtn.nextElementSibling : null;
+            
+            if (userDropdownBtn && userDropdownMenu) {
+                userDropdownBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Toggle dropdown
+                    const isOpen = userDropdownMenu.classList.contains('show');
+                    
+                    // Close all other dropdowns
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                    
+                    // Toggle current dropdown
+                    if (!isOpen) {
+                        userDropdownMenu.classList.add('show');
+                    }
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userDropdownBtn.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                        userDropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+            
+            // Mobile responsiveness
+            function handleResize() {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.add('active'); // Hide sidebar on mobile by default
+                } else {
+                    sidebar.classList.remove('active'); // Show sidebar on desktop
+                }
+            }
+            
+            // Initial check
+            handleResize();
+            
+            // Listen for resize events
+            window.addEventListener('resize', handleResize);
+        });
     </script>
     <!-- <script src="/docs/4.4/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm"

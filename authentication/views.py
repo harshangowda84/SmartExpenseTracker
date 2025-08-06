@@ -21,7 +21,8 @@ class EmailValidationView(View):
     def post(self, request):
         data = json.loads(request.body)
         email = data['email']
-        if not validate_email(email):
+        # Basic email validation - check if it contains @ and .
+        if '@' not in email or '.' not in email:
             return JsonResponse({'emailerror': 'Email is invalid'}, status=400)
         if User.objects.filter(email=email).exists():
             return JsonResponse({'emailerror': 'sorry email in use, choose another one'}, status=409)
@@ -60,26 +61,12 @@ class RegistrationView(View):
                         user = User.objects.create_user(
                             username=username, email=email)
                         user.set_password(password)
-                        user.is_active = False
+                        user.is_active = True  # Enable user immediately for development
                         user.save()
-                        email_subject = "Activate Your account"
-                        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-                        domain = get_current_site(request).domain
-                        link = reverse('activate', kwargs={
-                            'uidb64': uidb64, 'token': account_activation_token.make_token(user)
-                        })
-                        activate_url = 'http://'+domain+link
-                        email_body = 'Hi ' + user.username + \
-                            ' please use this link to verify your account\n'+activate_url
-                        email = EmailMessage(
-                            email_subject,
-                            email_body,
-                            'hemantshirsath24@gmail.com',
-                            [email],
-                        )
-                        email.send(fail_silently=False)
+                        # Skip email verification for development
                         messages.success(
-                            request, 'Account created successfully. An email with activation link has been sent to your email.')
+                            request, 'Account created successfully. You can now log in.')
+                        return redirect('login')
                     return render(request, 'authentication/register.html')
         except Exception as e:
             messages.error(request, "Error Occured : "+str(e))

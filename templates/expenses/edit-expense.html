@@ -33,25 +33,22 @@
                     <input type="text" class="form-control form-control-sm" name="description"
                         value="{{values.description}}" />
                 </div>
-                <!-- <div class="form-group">
-                    <label for="">Category</label>
-                    <select class="form-control" name="category">
-                        <option selected name="category" value="{{values.category}}">{{values.category}}</option>
-                        {% for category in categories%}
-                        <option name="category" value="{{category.name}}">{{category.name}}</option>
-
-                        {% endfor %}
-                    </select>
-                </div> -->
                 <div class="form-group">
                     <label for="">Category</label>
-                    <input type="text" class="form-control" name="category" id="category-input"
-                        value="{{values.category}}" />
+                    <select class="form-control" name="category" id="category-select" required>
+                        <option value="">Select a category</option>
+                        {% for category in categories%}
+                        <option value="{{category.name}}" 
+                            {% if values.category == category.name %}selected{% endif %}>
+                            {{category.name}}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="">Date of Expense</label>
                     <input type="date" value="{{values.date |date:'Y-m-d' }}" class="form-control form-control-sm"
-                        name="expense_date" />
+                        name="expense_date" max="{% now 'Y-m-d' %}" />
                 </div>
 
                 <input type="submit" value="Save" class="btn btn-primary btn-primary-sm" />

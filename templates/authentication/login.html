@@ -1,41 +1,270 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
 {% block content %}
+<div class="container-fluid min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7 col-sm-9">
+                <div class="card shadow-lg border-0" style="border-radius: 15px;">
+                    <div class="card-body p-5">
+                        <!-- Logo/Brand Section -->
+                        <div class="text-center mb-4">
+                            <div class="mb-3">
+                                <i class="fas fa-wallet fa-3x text-primary"></i>
+                            </div>
+                            <h3 class="text-primary font-weight-bold">Smart Expense Tracker</h3>
+                            <p class="text-muted">Welcome back! Please sign in to your account</p>
+                        </div>
 
-<div class="row">
-    <div class="col-md-3"></div>
-    <div class="col-md-6">
-        <div class="card mt-5">
-            <div class="card-body">
-                <div class="card-title py-3">
-                    <h4>Login to your account</h4>
+                        {% include 'partials/_messages.html' %}
+
+                        <form action="{% url 'login' %}" method="post" id="loginForm" novalidate>
+                            {% csrf_token %}
+                            
+                            <!-- Username Field -->
+                            <div class="form-group mb-4">
+                                <label for="usernameField" class="form-label font-weight-bold text-dark">
+                                    <i class="fas fa-user text-primary"></i> Username
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light border-right-0">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text" 
+                                           name="username" 
+                                           placeholder="Enter your username" 
+                                           id="usernameField"
+                                           value="{{fieldValues.username}}" 
+                                           class="form-control form-control-lg border-left-0" 
+                                           required
+                                           autocomplete="username" />
+                                    <div class="invalid-feedback">
+                                        Please enter your username.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="form-group mb-4">
+                                <label for="passwordField" class="form-label font-weight-bold text-dark">
+                                    <i class="fas fa-lock text-primary"></i> Password
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light border-right-0">
+                                            <i class="fas fa-lock text-muted"></i>
+                                        </span>
+                                    </div>
+                                    <input type="password" 
+                                           name="password" 
+                                           placeholder="Enter your password"
+                                           class="form-control form-control-lg border-left-0 border-right-0" 
+                                           id="passwordField" 
+                                           required
+                                           autocomplete="current-password" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-light border-left-0 cursor-pointer" 
+                                              id="togglePassword">
+                                            <i class="fas fa-eye text-muted"></i>
+                                        </span>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                        Please enter your password.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Remember Me & Forgot Password -->
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                                    <label class="form-check-label text-muted" for="rememberMe">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <a href="#" class="text-primary small">Forgot password?</a>
+                            </div>
+
+                            <!-- Login Button -->
+                            <button type="submit" class="btn btn-primary btn-lg btn-block mb-4" id="loginBtn">
+                                <i class="fas fa-sign-in-alt"></i> Sign In
+                            </button>
+
+                            <!-- Loading Spinner -->
+                            <div class="text-center" id="loadingSpinner" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <p class="text-muted mt-2">Signing you in...</p>
+                            </div>
+                        </form>
+
+                        <!-- Divider -->
+                        <div class="text-center my-4">
+                            <hr class="w-25 d-inline-block">
+                            <span class="text-muted px-3">OR</span>
+                            <hr class="w-25 d-inline-block">
+                        </div>
+
+                        <!-- Sign Up Link -->
+                        <div class="text-center">
+                            <p class="text-muted mb-0">
+                                Don't have an account? 
+                                <a href="{% url 'register' %}" class="text-primary font-weight-bold">Create Account</a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <form action="{% url 'login' %}" method="post">
 
-                    {% csrf_token %}
-
-                    {% include 'partials/_messages.html' %}
-                    <div class="form-group">
-                        <input type="text" name="username" placeholder="username" id="usernameField"
-                            value="{{fieldValues.username}}" class="form-control form-control-sm" />
+                <!-- Features Section -->
+                <div class="card mt-4 bg-transparent border-0">
+                    <div class="card-body text-center">
+                        <h6 class="text-white mb-3">Why Choose Smart Expense Tracker?</h6>
+                        <div class="row text-white">
+                            <div class="col-4">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                <small class="d-block">Smart Analytics</small>
+                            </div>
+                            <div class="col-4">
+                                <i class="fas fa-mobile-alt fa-2x mb-2"></i>
+                                <small class="d-block">Mobile Friendly</small>
+                            </div>
+                            <div class="col-4">
+                                <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                                <small class="d-block">Secure</small>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <input type="password" name="password" placeholder="Password"
-                            class="form-control form-control-sm" id="passwordField" />
-                    </div>
-                    <input type="submit" value="Login" class="btn btn-block btn-primary submit-btn" />
-                </form>
-
+                </div>
             </div>
-
         </div>
     </div>
 </div>
-<div class="col-md-4"></div>
-</div>
 
-<script src="{% static 'js/register.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const usernameField = document.getElementById('usernameField');
+    const passwordField = document.getElementById('passwordField');
+    const togglePassword = document.getElementById('togglePassword');
+    const loginBtn = document.getElementById('loginBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Reset previous validation states
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        
+        // Validate username
+        if (!usernameField.value.trim()) {
+            usernameField.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        // Validate password
+        if (!passwordField.value) {
+            passwordField.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (isValid) {
+            // Show loading state
+            loginBtn.style.display = 'none';
+            loadingSpinner.style.display = 'block';
+        } else {
+            e.preventDefault();
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+            }
+        }
+    });
+
+    // Real-time validation feedback
+    [usernameField, passwordField].forEach(field => {
+        field.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+        
+        field.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid') && this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+
+    // Auto-focus on username field
+    usernameField.focus();
+});
+</script>
+
+<style>
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.input-group-text {
+    border-radius: 0;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    border-color: #667eea;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.card {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.is-valid {
+    border-color: #28a745 !important;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.spinner-border {
+    width: 2rem;
+    height: 2rem;
+}
+
+.min-vh-100 {
+    min-height: 100vh;
+}
+</style>
 
 {% endblock content %}

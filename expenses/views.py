@@ -149,12 +149,13 @@ def add_expense(request):
             
             total_expenses_today = get_expense_of_day(user) + float(amount)
             if total_expenses_today > daily_expense_limit:
-                subject = 'Daily Expense Limit Exceeded'
-                message = f'Hello {user.username},\n\nYour expenses for today have exceeded your daily expense limit. Please review your expenses.'
-                from_email = settings.EMAIL_HOST_USER
-                to_email = [user.email]
-                send_mail(subject, message, from_email, to_email, fail_silently=False)
-                messages.warning(request, 'Your expenses for today exceed your daily expense limit')
+                # Email notification temporarily disabled to prevent app crashes
+                # subject = 'Daily Expense Limit Exceeded'
+                # message = f'Hello {user.username},\n\nYour expenses for today have exceeded your daily expense limit. Please review your expenses.'
+                # from_email = settings.EMAIL_HOST_USER
+                # to_email = [user.email]
+                # send_mail(subject, message, from_email, to_email, fail_silently=False)
+                messages.warning(request, f'Your expenses for today (₹{total_expenses_today}) exceed your daily expense limit of ₹{daily_expense_limit}.')
 
             Expense.objects.create(owner=request.user, amount=amount, date=date,
                                    category=predicted_category, description=description)
@@ -198,7 +199,7 @@ def expense_edit(request, id):
 
             if date > today:
                 messages.error(request, 'Date cannot be in the future')
-                return render(request, 'expenses/add_expense.html', context)
+                return render(request, 'expenses/edit-expense.html', context)
 
             expense.owner = request.user
             expense.amount = amount
@@ -212,7 +213,7 @@ def expense_edit(request, id):
             return redirect('expenses')
         except ValueError:
             messages.error(request, 'Invalid date format')
-            return render(request, 'expenses/edit_income.html', context)
+            return render(request, 'expenses/edit-expense.html', context)
 
         # expense.owner = request.user
         # expense.amount = amount
@@ -282,13 +283,28 @@ def set_expense_limit(request):
     if request.method == "POST":
         daily_expense_limit = request.POST.get('daily_expense_limit')
         
+        # Validate that the field is not empty and is a valid number
+        if not daily_expense_limit or daily_expense_limit.strip() == '':
+            messages.error(request, "Please enter a valid daily expense limit.")
+            return HttpResponseRedirect('/preferences/')
+        
+        try:
+            # Convert to int to validate it's a number
+            daily_expense_limit_int = int(daily_expense_limit)
+            if daily_expense_limit_int <= 0:
+                messages.error(request, "Daily expense limit must be greater than 0.")
+                return HttpResponseRedirect('/preferences/')
+        except ValueError:
+            messages.error(request, "Please enter a valid number for daily expense limit.")
+            return HttpResponseRedirect('/preferences/')
+        
         existing_limit = ExpenseLimit.objects.filter(owner=request.user).first()
         
         if existing_limit:
-            existing_limit.daily_expense_limit = daily_expense_limit
+            existing_limit.daily_expense_limit = daily_expense_limit_int
             existing_limit.save()
         else:
-            ExpenseLimit.objects.create(owner=request.user, daily_expense_limit=daily_expense_limit)
+            ExpenseLimit.objects.create(owner=request.user, daily_expense_limit=daily_expense_limit_int)
         
         messages.success(request, "Daily Expense Limit Updated Successfully!")
         return HttpResponseRedirect('/preferences/')

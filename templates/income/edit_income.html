@@ -46,7 +46,7 @@
                 <div class="form-group">
                     <label for="">Date of Income</label>
                     <input type="date" value="{{values.date | date:'Y-m-d' }}" class="form-control form-control-sm"
-                        name="income_date" />
+                        name="income_date" max="{% now 'Y-m-d' %}" />
                 </div>
 
                 <input type="submit" value="Save" class="btn btn-primary btn-primary-sm" />

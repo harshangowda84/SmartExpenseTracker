@@ -4,13 +4,14 @@ from .forms import GoalForm, AddAmountForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
+@login_required(login_url='/authentication/login')
 def add_goal(request):
     if request.method == 'POST':
         form = GoalForm(request.POST)
         if form.is_valid():
-            goal=form.save()
-            goal.owner=request.user
-            goal.save()
+            goal = form.save(commit=False)  # Don't save to database yet
+            goal.owner = request.user  # Set the owner first
+            goal.save()  # Now save to database
             return redirect('list_goals')
 
     form = GoalForm()
@@ -63,9 +64,15 @@ def add_amount(request, goal_id):
     return redirect('list_goals')
 
 def send_congratulatory_email(email, goal):
-    subject = 'Congratulations on achieving your goal!'
-    message = f'Dear User,\n\nCongratulations on achieving your goal "{goal.name}". You have successfully saved {goal.amount_to_save}.\n\nKeep up the good work!\n\nBest regards,\nThe Goal Tracker Team, \nExpenseWise Team'
-    send_mail(subject, message, 'hemantshirsath24@gmail.com', [email])
+    try:
+        subject = 'Congratulations on achieving your goal!'
+        message = f'Dear User,\n\nCongratulations on achieving your goal "{goal.name}". You have successfully saved {goal.amount_to_save}.\n\nKeep up the good work!\n\nBest regards,\nThe Goal Tracker Team, \nSmart Expense Tracker Team'
+        # Email temporarily disabled to prevent authentication errors
+        # send_mail(subject, message, 'hemantshirsath24@gmail.com', [email])
+        print(f"Congratulatory email would be sent to {email} for goal: {goal.name}")
+    except Exception as e:
+        print(f"Email sending failed: {e}")
+        # Continue without crashing the application
     
     
 

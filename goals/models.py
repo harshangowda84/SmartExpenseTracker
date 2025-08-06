@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.contrib.auth.models import User
+
 class Goal(models.Model):
     name = models.CharField(max_length=100)
     owner = models.ForeignKey(to=User, on_delete=models.CASCADE)
@@ -9,7 +9,6 @@ class Goal(models.Model):
     end_date = models.DateField()
     amount_to_save = models.DecimalField(max_digits=10, decimal_places=2)
     current_saved_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    owner = models.ForeignKey(to=User, on_delete=models.CASCADE)
     
 
     def calculate_progress(self):

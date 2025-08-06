@@ -1,4 +1,4 @@
-# Personal Expense Tracker
+# Smart Expense Tracker
 ![Expense Tracker UI](https://github.com/hemantshirsath/Expensetracker/assets/102463335/f31d97f4-4841-44cb-b2af-62286c60a0c9)
 ![forecast Expense UI ](https://github.com/hemantshirsath/Expensetracker/assets/102463335/c1188567-39c5-4cc1-8916-24f3d3712ee8)
 
@@ -7,7 +7,7 @@
 
 ## Overview
 
-This is a personal expense tracker web application built using Django. It allows users to log their expenses, categorize them, and provides automated expense categorization and future expense prediction features. This README.md file provides instructions for setting up and running the application on your local machine, as well as some additional information about its features and usage.
+This is a smart expense tracker web application built using Django. It allows users to log their expenses, categorize them, and provides automated expense categorization and future expense prediction features. This README.md file provides instructions for setting up and running the application on your local machine, as well as some additional information about its features and usage.
 
 ## Features
 
@@ -21,59 +21,73 @@ This is a personal expense tracker web application built using Django. It allows
 
 ## Setup
 
-To run this application locally, follow these steps:
+✅ **This project has been set up and is ready to run!**
 
-1. Clone the repository to your local machine:
+### Prerequisites
+- Python 3.13.5 (already configured)
+- Virtual environment (already created)
+- All dependencies installed
 
-   ```bash
-   git clone https://github.com/yourusername/personal-expense-tracker.git
-   ```
+### Quick Start
 
-2. Create a virtual environment (optional but recommended):
-
-   ```bash
-   python -m venv venv
-   ```
-
-3. Activate the virtual environment:
-
-   - **Windows**:
-
-     ```bash
-     venv\Scripts\activate
-     ```
-
-   - **macOS and Linux**:
-
-     ```bash
-     source venv/bin/activate
-     ```
-
-4. Install the required dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-5. Apply database migrations:
-
-   ```bash
-   python manage.py migrate
-   ```
-
-6. Create a superuser account to access the admin panel:
-
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-7. Start the development server:
-
+1. **Run the development server**:
+   - Press `Ctrl+Shift+P` in VS Code
+   - Type "Tasks: Run Task"
+   - Select "Run Django Development Server"
+   
+   Or run manually in terminal:
    ```bash
    python manage.py runserver
    ```
 
-8. Open your web browser and go to `http://localhost:8000` to access the application.
+2. **Open your web browser** and go to `http://localhost:8000` to access the application.
+
+3. **Admin Access**:
+   - Admin panel: `http://localhost:8000/admin/`
+   - Username: `admin`
+   - Email: `admin@example.com`
+   - Password: (set password using `python manage.py changepassword admin`)
+
+### Project Features Ready
+- ✅ Django 5.1.1 with REST Framework
+- ✅ SQLite database with migrations applied
+- ✅ Machine learning models (scikit-learn, NLTK) for expense categorization
+- ✅ ARIMA time series forecasting (statsmodels)
+- ✅ PDF report generation (xhtml2pdf, reportlab)
+- ✅ Data visualization (matplotlib, pandas)
+- ✅ Multi-currency support
+- ✅ User authentication system
+
+### Manual Setup (if needed)
+If you need to set up from scratch:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/hemantshirsath/Expensetracker.git
+   ```
+
+2. **Create and activate virtual environment**:
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate  # Windows
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   pip install scikit-learn validate-email xhtml2pdf statsmodels
+   ```
+
+4. **Download NLTK data**:
+   ```bash
+   python nltk_downloader.py
+   ```
+
+5. **Run migrations and create superuser**:
+   ```bash
+   python manage.py migrate
+   python manage.py createsuperuser
+   ```
 
 ## Usage
 
@@ -119,4 +133,4 @@ If you'd like to contribute to this project, please follow these steps:
 
 - The automated expense categorization and prediction features are powered by machine learning models, which were trained using various open-source libraries and datasets.
 
-Feel free to customize and enhance this expense tracker according to your needs. Happy budgeting!
+Feel free to customize and enhance this smart expense tracker according to your needs. Happy budgeting!

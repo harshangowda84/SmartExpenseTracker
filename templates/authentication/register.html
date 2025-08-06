@@ -1,51 +1,453 @@
 {% extends 'base.html' %}
 {% load static %}
 
-
 {% block content %}
+<div class="container-fluid min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-10">
+                <div class="card shadow-lg border-0" style="border-radius: 15px;">
+                    <div class="card-body p-5">
+                        <!-- Logo/Brand Section -->
+                        <div class="text-center mb-4">
+                            <div class="mb-3">
+                                <i class="fas fa-user-plus fa-3x text-primary"></i>
+                            </div>
+                            <h3 class="text-primary font-weight-bold">Join Smart Expense Tracker</h3>
+                            <p class="text-muted">Create your account and start tracking expenses intelligently</p>
+                        </div>
 
-<div class="row">
-    <div class="col-md-3"></div>
-    <div class="col-md-6">
-        <div class="card mt-5">
-            <div class="card-body">
-                <div class="card-title py-3">
-                    <h4>Register for an account</h4>
+                        {% include 'partials/_messages.html' %}
+
+                        <form action="{% url 'register' %}" method="POST" id="registerForm" novalidate>
+                            {% csrf_token %}
+                            
+                            <!-- Username Field -->
+                            <div class="form-group mb-4">
+                                <label for="usernameField" class="form-label font-weight-bold text-dark">
+                                    <i class="fas fa-user text-primary"></i> Username *
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light border-right-0">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text" 
+                                           name="username" 
+                                           placeholder="Choose a username" 
+                                           id="usernameField"
+                                           value="{{fieldValues.username}}" 
+                                           class="form-control form-control-lg border-left-0" 
+                                           required
+                                           minlength="3"
+                                           maxlength="20"
+                                           autocomplete="username" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-light border-left-0" id="usernameStatus">
+                                            <i class="fas fa-question text-muted"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback" id="usernameFeedback">
+                                    Please choose a valid username (3-20 characters).
+                                </div>
+                                <div class="valid-feedback" id="usernameSuccess">
+                                    Username is available!
+                                </div>
+                                <small class="form-text text-muted">Username must be 3-20 characters long</small>
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="form-group mb-4">
+                                <label for="emailField" class="form-label font-weight-bold text-dark">
+                                    <i class="fas fa-envelope text-primary"></i> Email Address *
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light border-right-0">
+                                            <i class="fas fa-envelope text-muted"></i>
+                                        </span>
+                                    </div>
+                                    <input type="email" 
+                                           name="email" 
+                                           placeholder="Enter your email address" 
+                                           class="form-control form-control-lg border-left-0"
+                                           id="emailField" 
+                                           value="{{fieldValues.email}}" 
+                                           required
+                                           autocomplete="email" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-light border-left-0" id="emailStatus">
+                                            <i class="fas fa-question text-muted"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback" id="emailFeedback">
+                                    Please enter a valid email address.
+                                </div>
+                                <div class="valid-feedback" id="emailSuccess">
+                                    Email is valid!
+                                </div>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="form-group mb-4">
+                                <label for="passwordField" class="form-label font-weight-bold text-dark">
+                                    <i class="fas fa-lock text-primary"></i> Password *
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light border-right-0">
+                                            <i class="fas fa-lock text-muted"></i>
+                                        </span>
+                                    </div>
+                                    <input type="password" 
+                                           name="password" 
+                                           placeholder="Create a strong password"
+                                           class="form-control form-control-lg border-left-0 border-right-0" 
+                                           id="passwordField" 
+                                           required
+                                           minlength="8"
+                                           autocomplete="new-password" />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-light border-left-0 cursor-pointer" 
+                                              id="togglePassword">
+                                            <i class="fas fa-eye text-muted"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback" id="passwordFeedback">
+                                    Password must be at least 8 characters long.
+                                </div>
+                                
+                                <!-- Password Strength Indicator -->
+                                <div class="mt-2">
+                                    <small class="text-muted">Password strength:</small>
+                                    <div class="progress" style="height: 4px;">
+                                        <div class="progress-bar" id="passwordStrength" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <small id="passwordStrengthText" class="text-muted">Enter a password</small>
+                                </div>
+                                
+                                <!-- Password Requirements -->
+                                <div class="mt-2">
+                                    <small class="text-muted">Password must contain:</small>
+                                    <ul class="list-unstyled mt-1">
+                                        <li class="small" id="length-req">
+                                            <i class="fas fa-times text-danger"></i> At least 8 characters
+                                        </li>
+                                        <li class="small" id="number-req">
+                                            <i class="fas fa-times text-danger"></i> At least one number
+                                        </li>
+                                        <li class="small" id="letter-req">
+                                            <i class="fas fa-times text-danger"></i> At least one letter
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="form-group mb-4">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                                    <label class="form-check-label text-muted" for="agreeTerms">
+                                        I agree to the <a href="#" class="text-primary">Terms of Service</a> and 
+                                        <a href="#" class="text-primary">Privacy Policy</a>
+                                    </label>
+                                    <div class="invalid-feedback">
+                                        You must agree to the terms and conditions.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Register Button -->
+                            <button type="submit" class="btn btn-primary btn-lg btn-block mb-4" id="registerBtn">
+                                <i class="fas fa-user-plus"></i> Create Account
+                            </button>
+
+                            <!-- Loading Spinner -->
+                            <div class="text-center" id="loadingSpinner" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <p class="text-muted mt-2">Creating your account...</p>
+                            </div>
+                        </form>
+
+                        <!-- Divider -->
+                        <div class="text-center my-4">
+                            <hr class="w-25 d-inline-block">
+                            <span class="text-muted px-3">OR</span>
+                            <hr class="w-25 d-inline-block">
+                        </div>
+
+                        <!-- Sign In Link -->
+                        <div class="text-center">
+                            <p class="text-muted mb-0">
+                                Already have an account? 
+                                <a href="{% url 'login' %}" class="text-primary font-weight-bold">Sign In</a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <form action="{% url 'register' %}" method="POST">
-                    {% csrf_token %}
-                    {% include 'partials/_messages.html' %}
-                    <div class="form-group">
-                        <input type="text" name="username" placeholder="username" id="usernameField"
-                            value="{{fieldValues.username}}" class="form-control form-control-sm" />
+                <!-- Benefits Section -->
+                <div class="card mt-4 bg-transparent border-0">
+                    <div class="card-body text-center">
+                        <h6 class="text-white mb-3">What you'll get:</h6>
+                        <div class="row text-white">
+                            <div class="col-4">
+                                <i class="fas fa-robot fa-2x mb-2"></i>
+                                <small class="d-block">AI Predictions</small>
+                            </div>
+                            <div class="col-4">
+                                <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                                <small class="d-block">Smart Reports</small>
+                            </div>
+                            <div class="col-4">
+                                <i class="fas fa-bullseye fa-2x mb-2"></i>
+                                <small class="d-block">Goal Tracking</small>
+                            </div>
+                        </div>
                     </div>
-                    <div class="invalid_feedback invalid-feedback" style="display:none">
-                    </div>
-                    <p class="text-sm text-success usernameSuccessOutput"></p>
-                    <div class="form-group">
-                        <input type="email" name="email" placeholder="Email" class="form-control form-control-sm"
-                            id="emailField" value="{{fieldValues.email}}" />
-                    </div>
-
-                    <div class="emailFeedBackArea invalid-feedback" style="display:none">
-                    </div>
-                    <div class="form-group">
-                        <input type="password" name="password" placeholder="Password"
-                            class="form-control form-control-sm" id="passwordField" />
-                        <small class="float-right py-3 showPasswordToggle">SHOW</small>
-                    </div>
-                    <input type="submit" value="Register" class="btn btn-block btn-primary submit-btn" />
-                </form>
-
+                </div>
             </div>
-
         </div>
     </div>
 </div>
-<div class="col-md-4"></div>
-</div>
 
-<script src="{% static 'js/register.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const usernameField = document.getElementById('usernameField');
+    const emailField = document.getElementById('emailField');
+    const passwordField = document.getElementById('passwordField');
+    const togglePassword = document.getElementById('togglePassword');
+    const agreeTerms = document.getElementById('agreeTerms');
+    const registerBtn = document.getElementById('registerBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+
+    // Password strength checker
+    passwordField.addEventListener('input', function() {
+        const password = this.value;
+        const strength = calculatePasswordStrength(password);
+        updatePasswordStrength(strength, password);
+    });
+
+    function calculatePasswordStrength(password) {
+        let score = 0;
+        if (password.length >= 8) score += 25;
+        if (/[a-z]/.test(password)) score += 25;
+        if (/[A-Z]/.test(password)) score += 25;
+        if (/[0-9]/.test(password)) score += 25;
+        if (/[^A-Za-z0-9]/.test(password)) score += 10;
+        return Math.min(score, 100);
+    }
+
+    function updatePasswordStrength(strength, password) {
+        const progressBar = document.getElementById('passwordStrength');
+        const strengthText = document.getElementById('passwordStrengthText');
+        
+        progressBar.style.width = strength + '%';
+        
+        if (strength === 0) {
+            progressBar.className = 'progress-bar';
+            strengthText.textContent = 'Enter a password';
+        } else if (strength < 50) {
+            progressBar.className = 'progress-bar bg-danger';
+            strengthText.textContent = 'Weak';
+        } else if (strength < 75) {
+            progressBar.className = 'progress-bar bg-warning';
+            strengthText.textContent = 'Fair';
+        } else if (strength < 90) {
+            progressBar.className = 'progress-bar bg-info';
+            strengthText.textContent = 'Good';
+        } else {
+            progressBar.className = 'progress-bar bg-success';
+            strengthText.textContent = 'Strong';
+        }
+
+        // Update requirements
+        updateRequirement('length-req', password.length >= 8);
+        updateRequirement('number-req', /[0-9]/.test(password));
+        updateRequirement('letter-req', /[a-zA-Z]/.test(password));
+    }
+
+    function updateRequirement(id, met) {
+        const element = document.getElementById(id);
+        const icon = element.querySelector('i');
+        
+        if (met) {
+            icon.className = 'fas fa-check text-success';
+            element.classList.add('text-success');
+            element.classList.remove('text-danger');
+        } else {
+            icon.className = 'fas fa-times text-danger';
+            element.classList.add('text-danger');
+            element.classList.remove('text-success');
+        }
+    }
+
+    // Username validation
+    let usernameTimeout;
+    usernameField.addEventListener('input', function() {
+        clearTimeout(usernameTimeout);
+        const username = this.value.trim();
+        
+        if (username.length >= 3) {
+            usernameTimeout = setTimeout(() => {
+                // Simulate username availability check
+                validateUsername(username);
+            }, 500);
+        }
+    });
+
+    function validateUsername(username) {
+        const status = document.getElementById('usernameStatus');
+        const icon = status.querySelector('i');
+        
+        // Simulate API call
+        setTimeout(() => {
+            if (username.length >= 3 && username.length <= 20) {
+                icon.className = 'fas fa-check text-success';
+                usernameField.classList.remove('is-invalid');
+                usernameField.classList.add('is-valid');
+                document.getElementById('usernameSuccess').style.display = 'block';
+            } else {
+                icon.className = 'fas fa-times text-danger';
+                usernameField.classList.add('is-invalid');
+                usernameField.classList.remove('is-valid');
+            }
+        }, 200);
+    }
+
+    // Email validation
+    emailField.addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && isValidEmail(email)) {
+            const status = document.getElementById('emailStatus');
+            const icon = status.querySelector('i');
+            icon.className = 'fas fa-check text-success';
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Reset previous validation states
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        
+        // Validate username
+        if (!usernameField.value.trim() || usernameField.value.length < 3) {
+            usernameField.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        // Validate email
+        if (!emailField.value.trim() || !isValidEmail(emailField.value)) {
+            emailField.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        // Validate password
+        if (!passwordField.value || passwordField.value.length < 8) {
+            passwordField.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        // Validate terms agreement
+        if (!agreeTerms.checked) {
+            agreeTerms.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (isValid) {
+            // Show loading state
+            registerBtn.style.display = 'none';
+            loadingSpinner.style.display = 'block';
+        } else {
+            e.preventDefault();
+            // Focus on first invalid field
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+            }
+        }
+    });
+
+    // Auto-focus on username field
+    usernameField.focus();
+});
+</script>
+
+<style>
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.input-group-text {
+    border-radius: 0;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    border-color: #667eea;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.card {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.is-valid {
+    border-color: #28a745 !important;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.progress {
+    border-radius: 2px;
+}
+
+.list-unstyled li {
+    padding: 2px 0;
+}
+
+.min-vh-100 {
+    min-height: 100vh;
+}
+</style>
 
 {% endblock content %}

@@ -29,11 +29,11 @@
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="start_date">Start Date:</label>
-                <input type="date" name="start_date" class="form-control" required>
+                <input type="date" name="start_date" class="form-control" max="{% now 'Y-m-d' %}" required>
             </div>
             <div class="form-group col-md-6">
                 <label for="end_date">End Date:</label>
-                <input type="date" name="end_date" class="form-control" required>
+                <input type="date" name="end_date" class="form-control" max="{% now 'Y-m-d' %}" required>
             </div>
         </div>
         <button type="submit" id="generate-report" class="btn btn-primary">Generate Report</button>
