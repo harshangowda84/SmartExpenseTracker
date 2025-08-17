@@ -30,4 +30,5 @@ class Category(models.Model):
 
 class ExpenseLimit(models.Model):
     owner = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    daily_expense_limit=models.IntegerField()
+    daily_expense_limit = models.IntegerField()
+    monthly_expense_limit = models.IntegerField(default=0)

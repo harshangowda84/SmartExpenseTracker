@@ -84,13 +84,23 @@ def index(request):
         currency=None
 
     total = page_obj.paginator.num_pages
+    # Check daily expense limit and show warning if exceeded
+    user = request.user
+    expense_limits = ExpenseLimit.objects.filter(owner=user)
+    if expense_limits.exists():
+        daily_expense_limit = expense_limits.first().daily_expense_limit
+    else:
+        daily_expense_limit = 5000
+    total_expenses_today = get_expense_of_day(user)
+    if daily_expense_limit > 0 and total_expenses_today > daily_expense_limit:
+        messages.warning(request, f'Your expenses for today (₹{total_expenses_today}) exceed your daily expense limit of ₹{daily_expense_limit}.')
+
     context = {
         'expenses': expenses,
         'page_obj': page_obj,
         'currency': currency,
         'total': total,
         'sort_order': sort_order,
-
     }
     return render(request, 'expenses/index.html', context)
 
@@ -148,7 +158,8 @@ def add_expense(request):
 
             
             total_expenses_today = get_expense_of_day(user) + float(amount)
-            if total_expenses_today > daily_expense_limit:
+            # Only show warning if daily_expense_limit is greater than zero
+            if daily_expense_limit > 0 and total_expenses_today > daily_expense_limit:
                 # Email notification temporarily disabled to prevent app crashes
                 # subject = 'Daily Expense Limit Exceeded'
                 # message = f'Hello {user.username},\n\nYour expenses for today have exceeded your daily expense limit. Please review your expenses.'
@@ -282,31 +293,39 @@ def predict_category(description):
 def set_expense_limit(request):
     if request.method == "POST":
         daily_expense_limit = request.POST.get('daily_expense_limit')
-        
-        # Validate that the field is not empty and is a valid number
+        monthly_expense_limit = request.POST.get('monthly_expense_limit')
+        # Validate daily limit
         if not daily_expense_limit or daily_expense_limit.strip() == '':
             messages.error(request, "Please enter a valid daily expense limit.")
             return HttpResponseRedirect('/preferences/')
-        
         try:
-            # Convert to int to validate it's a number
             daily_expense_limit_int = int(daily_expense_limit)
-            if daily_expense_limit_int <= 0:
-                messages.error(request, "Daily expense limit must be greater than 0.")
+            if daily_expense_limit_int < 0:
+                messages.error(request, "Daily expense limit must be zero or greater.")
                 return HttpResponseRedirect('/preferences/')
         except ValueError:
             messages.error(request, "Please enter a valid number for daily expense limit.")
             return HttpResponseRedirect('/preferences/')
-        
+        # Validate monthly limit
+        if not monthly_expense_limit or monthly_expense_limit.strip() == '':
+            messages.error(request, "Please enter a valid monthly expense limit.")
+            return HttpResponseRedirect('/preferences/')
+        try:
+            monthly_expense_limit_int = int(monthly_expense_limit)
+            if monthly_expense_limit_int < 0:
+                messages.error(request, "Monthly expense limit must be zero or greater.")
+                return HttpResponseRedirect('/preferences/')
+        except ValueError:
+            messages.error(request, "Please enter a valid number for monthly expense limit.")
+            return HttpResponseRedirect('/preferences/')
         existing_limit = ExpenseLimit.objects.filter(owner=request.user).first()
-        
         if existing_limit:
             existing_limit.daily_expense_limit = daily_expense_limit_int
+            existing_limit.monthly_expense_limit = monthly_expense_limit_int
             existing_limit.save()
         else:
-            ExpenseLimit.objects.create(owner=request.user, daily_expense_limit=daily_expense_limit_int)
-        
-        messages.success(request, "Daily Expense Limit Updated Successfully!")
+            ExpenseLimit.objects.create(owner=request.user, daily_expense_limit=daily_expense_limit_int, monthly_expense_limit=monthly_expense_limit_int)
+        messages.success(request, "Expense Limits Updated Successfully!")
         return HttpResponseRedirect('/preferences/')
     else:
         return HttpResponseRedirect('/preferences/')
@@ -316,4 +335,3 @@ def get_expense_of_day(user):
     expenses=Expense.objects.filter(owner=user,date=current_date)
     total_expenses=sum(expense.amount for expense in expenses)
     return total_expenses
-    

@@ -26,25 +26,35 @@
 </div>
 <div class="container mt-5">
     <h5 class="mt-5">Your Current Daily Expense Limit is : <b> ₹{{daily_expense_limit}} </b></h5>
-    <form action="{%url 'set-daily-expense-limit'%}" method="POST">
-        {% csrf_token %}
-        <div class="form-group">
-            <h5> <label for="daily_expense_limit_input">Set Daily Expense Limit</label></h5>
-            <input type="number" class="form-control" id="daily_expense_limit_input" 
-                aria-describedby="expenseLimitHelp"
-                placeholder="Enter daily Expense Limit" 
-                name="daily_expense_limit" 
-                value="{{daily_expense_limit}}"
-                min="1" 
-                max="999999" 
-                required>
-            <small id="expenseLimitHelp" class="form-text text-muted">Enter a positive number for your daily spending limit.</small>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-</div>
-
-
-<hr />
-
+    <h5>Your Current Monthly Expense Limit is : <b> ₹{{monthly_expense_limit}} </b></h5>
+        <form action="{%url 'set-daily-expense-limit'%}" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <h5> <label for="daily_expense_limit_input">Set Daily Expense Limit</label></h5>
+                <input type="number" class="form-control" id="daily_expense_limit_input"
+                    aria-describedby="expenseLimitHelp"
+                    placeholder="Enter daily Expense Limit"
+                    name="daily_expense_limit"
+                    value="{{daily_expense_limit}}"
+                    min="0"
+                    max="999999"
+                    required>
+                <small id="expenseLimitHelp" class="form-text text-muted">Enter zero or a positive number for your daily spending limit.</small>
+            </div>
+            <div class="form-group">
+                <h5> <label for="monthly_expense_limit_input">Set Monthly Expense Limit</label></h5>
+                <input type="number" class="form-control" id="monthly_expense_limit_input"
+                    aria-describedby="monthlyExpenseLimitHelp"
+                    placeholder="Enter monthly Expense Limit"
+                    name="monthly_expense_limit"
+                    value="{{monthly_expense_limit}}"
+                    min="0"
+                    max="9999999"
+                    required>
+                <small id="monthlyExpenseLimitHelp" class="form-text text-muted">Enter zero or a positive number for your monthly spending limit.</small>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    <hr />
 {% endblock %}

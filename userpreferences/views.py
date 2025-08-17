@@ -13,11 +13,13 @@ from expenses.models import ExpenseLimit
 def index(request):
     # daily_expense_limit=ExpenseLimit.objects.filter(owner=request.user).first()
     daily_expense_limit, created = ExpenseLimit.objects.get_or_create(
-    owner=request.user,
-    defaults={
-        'daily_expense_limit': 5000 # Replace with a default value for the limit
-    }
-)
+        owner=request.user,
+        defaults={
+            'daily_expense_limit': 5000,
+            'monthly_expense_limit': 0
+        }
+    )
+    monthly_expense_limit = daily_expense_limit.monthly_expense_limit
     currency_data = []
     exists = UserPreference.objects.filter(user=request.user).exists()
     user_preferences = None
@@ -30,7 +32,12 @@ def index(request):
             for k, v in data.items():
                 currency_data.append({'name': k, 'value': v})
 
-        return render(request, 'preferences/index.html', {'currencies': currency_data, 'user_preferences': user_preferences,'daily_expense_limit':daily_expense_limit.daily_expense_limit})
+        return render(request, 'preferences/index.html', {
+            'currencies': currency_data,
+            'user_preferences': user_preferences,
+            'daily_expense_limit': daily_expense_limit.daily_expense_limit,
+            'monthly_expense_limit': monthly_expense_limit
+        })
     else:
         currency = request.POST['currency']
         if exists:
@@ -38,5 +45,12 @@ def index(request):
             user_preferences.save()
         else:
             UserPreference.objects.create(user=request.user, currency=currency)
-        messages.success(request, "Changes saved successfully")
-        return render(request, 'preferences/index.html', {'currencies': currency_data, 'user_preferences': user_preferences,'daily_expense_limit':daily_expense_limit.daily_expense_limit})
+        messages.success(request, "Currency preference saved successfully!")
+        # Reload user_preferences to get updated currency
+        user_preferences = UserPreference.objects.get(user=request.user)
+        return render(request, 'preferences/index.html', {
+            'currencies': currency_data,
+            'user_preferences': user_preferences,
+            'daily_expense_limit': daily_expense_limit.daily_expense_limit,
+            'monthly_expense_limit': monthly_expense_limit
+        })
