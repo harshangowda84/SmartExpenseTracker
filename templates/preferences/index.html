@@ -27,7 +27,7 @@
 <div class="container mt-5">
     <h5 class="mt-5">Your Current Daily Expense Limit is : <b> ₹{{daily_expense_limit}} </b></h5>
     <h5>Your Current Monthly Expense Limit is : <b> ₹{{monthly_expense_limit}} </b></h5>
-        <form action="{%url 'set-daily-expense-limit'%}" method="POST">
+    <form action="{% url 'preferences' %}" method="POST">
             {% csrf_token %}
             <div class="form-group">
                 <h5> <label for="daily_expense_limit_input">Set Daily Expense Limit</label></h5>

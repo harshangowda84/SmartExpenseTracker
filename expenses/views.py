@@ -317,7 +317,7 @@ def add_expense(request):
             Expense.objects.create(owner=request.user, amount=amount, date=date,
                                    category=predicted_category, description=description)
             messages.success(request, 'Expense saved successfully')
-            return redirect('expenses')
+            return redirect('expenses:expenses')
         except ValueError:
             messages.error(request, 'Invalid date format')
             return render(request, 'expenses/add_expense.html', context)
@@ -389,7 +389,7 @@ def delete_expense(request, id):
     expense = Expense.objects.get(pk=id)
     expense.delete()
     messages.success(request, 'Expense removed')
-    return redirect('expenses')
+    return redirect('expenses:expenses')
 
 @login_required(login_url='/authentication/login')
 def expense_category_summary(request):

@@ -6,7 +6,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="{% url 'expenses'%}">Expenses</a>
+                        <a href="{% url 'expenses:expenses' %}">Expenses</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
                         Edit Expense
@@ -16,13 +16,13 @@
         </div>
 
         <div class="col-md-2">
-            <a href="{% url 'expense-delete' expense.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this expense? This action cannot be undone.');">Delete</a>
+            <a href="{% url 'expenses:expense-delete' expense.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this expense? This action cannot be undone.');">Delete</a>
         </div>
     </div>
 
     <div class="card">
         <div class="card-body">
-            <form action="{% url 'expense-edit' expense.id %}" method="post">
+            <form action="{% url 'expenses:expense-edit' expense.id %}" method="post">
                 {% include 'partials/_messages.html'%} {% csrf_token %}
                 <div class="form-group">
                     <label for="">Amount</label>
