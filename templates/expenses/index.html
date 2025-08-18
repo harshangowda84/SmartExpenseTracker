@@ -44,7 +44,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h5 class="card-title">This Month</h5>
-                    <h3 id="monthlyTotal">-</h3>
+                    <h3>{{ monthly_expense|floatformat:2 }}</h3>
                     <small>{{ currency }}</small>
                 </div>
             </div>
@@ -53,7 +53,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                     <h5 class="card-title">Categories</h5>
-                    <h3 id="categoryCount">-</h3>
+                    <h3>{{ unique_categories }}</h3>
                     <small>Unique</small>
                 </div>
             </div>
@@ -62,7 +62,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h5 class="card-title">Avg/Day</h5>
-                    <h3 id="dailyAvg">-</h3>
+                    <h3>{{ avg_daily_expense|floatformat:2 }}</h3>
                     <small>{{ currency }}</small>
                 </div>
             </div>
