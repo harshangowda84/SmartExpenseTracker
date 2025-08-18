@@ -84,16 +84,31 @@ def index(request):
         currency=None
 
     total = page_obj.paginator.num_pages
-    # Check daily expense limit and show warning if exceeded
+    # Check daily and monthly expense limits and show warning if exceeded
     user = request.user
     expense_limits = ExpenseLimit.objects.filter(owner=user)
     if expense_limits.exists():
         daily_expense_limit = expense_limits.first().daily_expense_limit
+        monthly_expense_limit = expense_limits.first().monthly_expense_limit
     else:
         daily_expense_limit = 5000
+        monthly_expense_limit = 100000
     total_expenses_today = get_expense_of_day(user)
+    # Calculate total expenses for current month
+    today = datetime.date.today()
+    first_day_of_month = today.replace(day=1)
+    from django.db.models import Sum
+    total_expenses_month = Expense.objects.filter(owner=user, date__gte=first_day_of_month, date__lte=today).aggregate(total=Sum('amount'))['total'] or 0
     if daily_expense_limit > 0 and total_expenses_today > daily_expense_limit:
         messages.warning(request, f'Your expenses for today (₹{total_expenses_today}) exceed your daily expense limit of ₹{daily_expense_limit}.')
+    if monthly_expense_limit > 0 and total_expenses_month > monthly_expense_limit:
+        messages.warning(request, f'Your expenses for this month (₹{total_expenses_month}) exceed your monthly expense limit of ₹{monthly_expense_limit}.')
+
+    # Calculate unique categories and average daily expense
+    unique_categories = expenses.values('category').distinct().count()
+    # Calculate average daily expense for current month
+    days_in_month = today.day
+    avg_daily_expense = total_expenses_month / days_in_month if days_in_month > 0 else 0
 
     context = {
         'expenses': expenses,
@@ -101,6 +116,9 @@ def index(request):
         'currency': currency,
         'total': total,
         'sort_order': sort_order,
+        'monthly_expense': total_expenses_month,
+        'unique_categories': unique_categories,
+        'avg_daily_expense': avg_daily_expense,
     }
     return render(request, 'expenses/index.html', context)
 
