@@ -1,3 +1,105 @@
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import pytesseract
+from PIL import Image
+import io
+# OCR extraction API view
+@csrf_exempt
+def extract_ocr(request):
+    if request.method == 'POST' and request.FILES.get('bill_image'):
+        image_file = request.FILES['bill_image']
+        try:
+            image = Image.open(image_file)
+            text = pytesseract.image_to_string(image)
+            return JsonResponse({'text': text})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+from django.views.decorators.csrf import csrf_exempt
+
+# AJAX endpoint for OCR extraction
+@csrf_exempt
+def extract_expense_data(request):
+    if request.method == 'POST' and request.FILES.get('bill_image'):
+        bill_image = request.FILES['bill_image']
+        try:
+            image = Image.open(bill_image)
+            ocr_text = pytesseract.image_to_string(image)
+            import re
+            nlp = spacy.load('en_core_web_sm')
+            doc = nlp(ocr_text)
+            merchant = None
+            for ent in doc.ents:
+                if ent.label_ == 'ORG':
+                    merchant = ent.text
+                    break
+            if not merchant:
+                lines = ocr_text.splitlines()
+                merchant = lines[0] if lines else ''
+            # Improved extraction: prioritize 'Total' value
+            # Use spaCy MONEY entity extraction for amount
+            extracted_amount = ''
+            money_entities = []
+            for ent in doc.ents:
+                if ent.label_ == 'MONEY':
+                    # Only consider if currency symbol present and not in GST/invoice/table lines
+                    if re.search(r'[₹Rs]', ent.text):
+                        if not re.search(r'GST|invoice|table', ent.sent.text, re.IGNORECASE):
+                            val = re.sub(r'[^\d.,]', '', ent.text)
+                            try:
+                                money_entities.append(float(val.replace(',', '')))
+                            except:
+                                pass
+            if money_entities:
+                extracted_amount = str(int(max(money_entities)))
+            else:
+                # Fallback to previous logic if no MONEY entities found
+                lines = ocr_text.splitlines()
+                total_amounts = []
+                for line in lines:
+                    if re.search(r'Total|Sub-Total', line, re.IGNORECASE):
+                        # Only consider numbers with currency symbol and not in GST/invoice/table lines
+                        if not re.search(r'GST|invoice|table', line, re.IGNORECASE):
+                            total_amounts += re.findall(r'[₹Rs]\s*(\d{3,6}[.,]?\d*)', line)
+                total_amounts = [float(a.replace(',', '')) for a in total_amounts if a and float(a.replace(',', '')) > 100]
+                if total_amounts:
+                    extracted_amount = str(int(max(total_amounts)))
+                else:
+                    # Fallback: find all currency-like numbers in lines with ₹ or Rs, excluding GST/invoice/table lines
+                    currency_lines = [l for l in lines if re.search(r'[₹Rs]', l) and not re.search(r'GST|invoice|table', l, re.IGNORECASE)]
+                    amounts = []
+                    for l in currency_lines:
+                        amounts += re.findall(r'[₹Rs]\s*(\d{3,6}[.,]?\d*)', l)
+                    filtered = [float(a.replace(',', '')) for a in amounts if a and float(a.replace(',', '')) > 100]
+                    if filtered:
+                        extracted_amount = str(int(max(filtered)))
+            date_match = re.search(r'(\d{2}[/-]\d{2}[/-]\d{4})', ocr_text)
+            if date_match:
+                extracted_date = date_match.group(1)
+            else:
+                extracted_date = None
+                for ent in doc.ents:
+                    if ent.label_ == 'DATE':
+                        extracted_date = ent.text
+                        break
+            extracted_description = merchant
+            if extracted_description:
+                clean_desc = preprocess_text(extracted_description)
+                desc_vec = tfidf_vectorizer.transform([clean_desc])
+                predicted_category = model.predict(desc_vec)[0]
+            else:
+                predicted_category = 'Uncategorized'
+            return JsonResponse({
+                'success': True,
+                'ocr_text': ocr_text,
+                'amount': extracted_amount or '',
+                'description': extracted_description or '',
+                'expense_date': extracted_date or '',
+                'category': predicted_category
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'OCR failed: {str(e)}'})
+    return JsonResponse({'success': False, 'error': 'No image uploaded.'})
 from django.shortcuts import render, redirect,HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from .models import Category, Expense
@@ -10,6 +112,9 @@ from userpreferences.models import UserPreference
 import datetime
 import requests
 import pandas as pd
+import pytesseract
+import spacy
+from PIL import Image
 from sklearn.feature_extraction.text import TfidfVectorizer
 from django.contrib.sessions.models import Session
 from datetime import date
@@ -117,57 +222,98 @@ def add_expense(request):
         return render(request, 'expenses/add_expense.html', context)
 
     if request.method == 'POST':
+        # OCR logic for bill image
+        bill_image = request.FILES.get('bill_image')
+        ocr_text = None
+        extracted_amount = None
+        extracted_description = None
+        extracted_date = None
+        extracted_category = None
+        if bill_image:
+            try:
+                image = Image.open(bill_image)
+                ocr_text = pytesseract.image_to_string(image)
+                import re
+                # Load spaCy model
+                nlp = spacy.load('en_core_web_sm')
+                doc = nlp(ocr_text)
+                # Extract merchant (first ORG entity or first line)
+                merchant = None
+                for ent in doc.ents:
+                    if ent.label_ == 'ORG':
+                        merchant = ent.text
+                        break
+                if not merchant:
+                    lines = ocr_text.splitlines()
+                    merchant = lines[0] if lines else ''
+                # Extract amount
+                amount_match = re.search(r'(?:total|amount|amt)[^\d]*(\d+[.,]?\d*)', ocr_text, re.IGNORECASE)
+                if amount_match:
+                    extracted_amount = amount_match.group(1)
+                else:
+                    # fallback: first currency-like number
+                    currency_match = re.search(r'(\d+[.,]\d{2})', ocr_text)
+                    if currency_match:
+                        extracted_amount = currency_match.group(1)
+                # Extract date
+                date_match = re.search(r'(\d{2}[/-]\d{2}[/-]\d{4})', ocr_text)
+                if date_match:
+                    extracted_date = date_match.group(1)
+                else:
+                    # fallback: first DATE entity
+                    for ent in doc.ents:
+                        if ent.label_ == 'DATE':
+                            extracted_date = ent.text
+                            break
+                # Use merchant as description
+                extracted_description = merchant
+                # ML-based category prediction using trained model
+                if extracted_description:
+                    # Preprocess description
+                    clean_desc = preprocess_text(extracted_description)
+                    desc_vec = tfidf_vectorizer.transform([clean_desc])
+                    predicted_category = model.predict(desc_vec)[0]
+                else:
+                    predicted_category = 'Uncategorized'
+                context['values'] = {
+                    'amount': extracted_amount or '',
+                    'description': extracted_description or '',
+                    'expense_date': extracted_date or '',
+                    'category': predicted_category
+                }
+                messages.info(request, 'OCR scan complete. Please review and submit the details.')
+                return render(request, 'expenses/add_expense.html', context)
+            except Exception as e:
+                messages.error(request, f'OCR failed: {str(e)}')
+                return render(request, 'expenses/add_expense.html', context)
+
+        # If no image, proceed with normal form
         amount = request.POST['amount']
         date_str = request.POST.get('expense_date')
-        
         if not amount:
             messages.error(request, 'Amount is required')
             return render(request, 'expenses/add_expense.html', context)
         description = request.POST['description']
         date = request.POST['expense_date']
         predicted_category = request.POST['category']
-
         if not description:
             messages.error(request, 'description is required')
             return render(request, 'expenses/add_expense.html', context)
-        
-        initial_predicted_category = request.POST.get('initial_predicted_category')
-        if predicted_category != initial_predicted_category:
-            new_data = {
-            'description': description,
-            'category': predicted_category,
-        }
-
-        update_url = 'http://127.0.0.1:8000/api/update-dataset/'
-        response = requests.post(update_url, json={'new_data': new_data})
-
         try:
             date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
             today = datetime.date.today()
-
             if date > today:
                 messages.error(request, 'Date cannot be in the future')
                 return render(request, 'expenses/add_expense.html', context)
-            
             user = request.user
             expense_limits = ExpenseLimit.objects.filter(owner=user)
             if expense_limits.exists():
                 daily_expense_limit = expense_limits.first().daily_expense_limit
             else:
-                daily_expense_limit = 5000  
-
-            
+                daily_expense_limit = 5000
             total_expenses_today = get_expense_of_day(user) + float(amount)
-            # Only show warning if daily_expense_limit is greater than zero
             if daily_expense_limit > 0 and total_expenses_today > daily_expense_limit:
-                # Email notification temporarily disabled to prevent app crashes
-                # subject = 'Daily Expense Limit Exceeded'
-                # message = f'Hello {user.username},\n\nYour expenses for today have exceeded your daily expense limit. Please review your expenses.'
-                # from_email = settings.EMAIL_HOST_USER
-                # to_email = [user.email]
-                # send_mail(subject, message, from_email, to_email, fail_silently=False)
                 messages.warning(request, f'Your expenses for today (₹{total_expenses_today}) exceed your daily expense limit of ₹{daily_expense_limit}.')
-
             Expense.objects.create(owner=request.user, amount=amount, date=date,
                                    category=predicted_category, description=description)
             messages.success(request, 'Expense saved successfully')

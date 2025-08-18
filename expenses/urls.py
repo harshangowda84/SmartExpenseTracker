@@ -1,8 +1,11 @@
 from django.urls import path
+
+app_name = "expenses"
 from . import views
 
-from django.views.decorators.csrf import csrf_exempt
 
+
+from django.views.decorators.csrf import csrf_exempt
 urlpatterns = [
     path('', views.index, name="expenses"),
     path('add-expense', views.add_expense, name="add-expenses"),
@@ -14,6 +17,8 @@ urlpatterns = [
          name="expense_category_summary"),
     path('stats', views.stats_view,
          name="stats"),
-    path('set-daily-expense-limit/',views.set_expense_limit,name="set-daily-expense-limit")
+     path('set-daily-expense-limit/',views.set_expense_limit,name="set-daily-expense-limit"),
+     path('extract-expense-data', csrf_exempt(views.extract_expense_data), name="extract-expense-data"),
+     path('extract-ocr', views.extract_ocr, name="extract-ocr")
 
 ]

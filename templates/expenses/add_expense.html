@@ -9,10 +9,10 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="{% url 'expenses'%}"><i class="fas fa-home"></i> Dashboard</a>
+                        <a href="{% url 'expenses:expenses'%}"><i class="fas fa-home"></i> Dashboard</a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a href="{% url 'expenses'%}">Expenses</a>
+                        <a href="{% url 'expenses:expenses'%}">Expenses</a>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">Add New Expense</li>
                 </ol>
@@ -37,9 +37,26 @@
                 <div class="card-body p-4">
                     {% include 'partials/_messages.html'%}
                     
-                    <form action="{% url 'add-expenses' %}" method="post" id="expense-form" novalidate>
+                    <form action="{% url 'expenses:add-expenses' %}" method="post" id="expense-form" novalidate>
                         {% csrf_token %}
-                        
+                        <!-- Bill Image Upload Field -->
+                        <div class="form-group mb-4">
+                            <label for="bill_image" class="form-label font-weight-bold">
+                                <i class="fas fa-file-image text-info"></i> Upload Bill Image (for OCR)
+                            </label>
+                            <input type="file" class="form-control-file" name="bill_image" id="bill_image" accept="image/*">
+                            <button type="button" id="extract-btn" class="btn btn-info mt-2">Extract</button>
+                            <div id="extract-progress" class="progress mt-2" style="display:none; height: 25px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%;">Extracting...</div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-4" id="ocr-text-group" style="display:block;">
+                            <label for="ocr-text" class="form-label font-weight-bold">
+                                <i class="fas fa-file-alt text-secondary"></i> Extracted Text
+                            </label>
+                            <textarea class="form-control" id="ocr-text" rows="8" readonly style="height:auto;resize:none;"></textarea>
+                            <small class="form-text text-muted">Copy and paste the required info into the fields below.</small>
+                        </div>
                         <!-- Amount Field -->
                         <div class="form-group mb-4">
                             <label for="amount" class="form-label font-weight-bold">
@@ -166,7 +183,7 @@
                                 </button>
                             </div>
                             <div class="col-md-6">
-                                <a href="{% url 'expenses' %}" class="btn btn-outline-secondary btn-lg btn-block">
+                                <a href="{% url 'expenses:expenses' %}" class="btn btn-outline-secondary btn-lg btn-block">
                                     <i class="fas fa-times"></i> Cancel
                                 </a>
                             </div>
@@ -205,6 +222,42 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const extractBtn = document.getElementById('extract-btn');
+    const saveBtn = document.getElementById('btn');
+    const billImageInput = document.getElementById('bill_image');
+
+    extractBtn.addEventListener('click', function() {
+        const file = billImageInput.files[0];
+        if (!file) {
+            alert('Please select an image first.');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('bill_image', file);
+    fetch('{% url "expenses:extract-expense-data" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('ocr-text-group').style.display = 'block';
+                const ocrTextArea = document.getElementById('ocr-text');
+                ocrTextArea.value = data.ocr_text || '';
+                ocrTextArea.style.height = 'auto';
+                ocrTextArea.style.height = (ocrTextArea.scrollHeight) + 'px';
+                saveBtn.style.display = 'block';
+            } else {
+                alert(data.error || 'Extraction failed.');
+            }
+        })
+        .catch(() => {
+            alert('Extraction failed.');
+        });
+    });
     const form = document.getElementById('expense-form');
     const amountField = document.getElementById('amount');
     const descriptionField = document.getElementById('description-input');
@@ -361,52 +414,109 @@ document.addEventListener('DOMContentLoaded', function() {
         // You could show a success message here and reset the form
     }
 });
-</script>
+                <script>
+                    function resizeOCRTextarea() {
+                        var textarea = document.getElementById('ocr-text');
+                        if (textarea) {
+                            textarea.style.height = 'auto';
+                            textarea.style.height = textarea.scrollHeight + 'px';
+                        }
+                    }
 
-<style>
-.card {
-    border-radius: 10px;
-}
+                    function showExtractProgress(show) {
+                        var progress = document.getElementById('extract-progress');
+                        if (progress) {
+                            progress.style.display = show ? 'block' : 'none';
+                        }
+                    }
 
-.form-control-lg {
-    border-radius: 8px;
-}
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var textarea = document.getElementById('ocr-text');
+                        if (textarea) {
+                            resizeOCRTextarea();
+                        }
+                        var extractBtn = document.getElementById('extract-btn');
+                        var billInput = document.getElementById('bill_image');
+                        if (extractBtn && billInput) {
+                            extractBtn.addEventListener('click', function() {
+                                if (!billInput.files || billInput.files.length === 0) {
+                                    alert('Please select a bill image to extract.');
+                                    return;
+                                }
+                                showExtractProgress(true);
+                                var formData = new FormData();
+                                formData.append('bill_image', billInput.files[0]);
+                                fetch('{% url "expenses:extract-ocr" %}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRFToken': '{{ csrf_token }}'
+                                    },
+                                    body: formData
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.text) {
+                                        textarea.value = data.text;
+                                        resizeOCRTextarea();
+                                    } else {
+                                        textarea.value = '';
+                                        alert('No text extracted.');
+                                    }
+                                    showExtractProgress(false);
+                                })
+                                .catch(error => {
+                                    showExtractProgress(false);
+                                    alert('Extraction failed.');
+                                });
+                            });
+                        }
+                    });
 
-.input-group-text {
-    border-radius: 8px 0 0 8px;
-}
+                </script>
+                <style>
+                .card {
+                    border-radius: 10px;
+                }
 
-.btn-lg {
-    border-radius: 8px;
-    font-weight: 600;
-}
+                .form-control-lg {
+                    border-radius: 8px;
+                }
 
-.is-valid {
-    border-color: #28a745 !important;
-}
+                .input-group-text {
+                    border-radius: 8px 0 0 8px;
+                }
 
-.is-invalid {
-    border-color: #dc3545 !important;
-}
+                .btn-lg {
+                    border-radius: 8px;
+                    font-weight: 600;
+                }
 
-.badge.cursor-pointer:hover {
-    opacity: 0.8;
-    transform: scale(1.05);
-    transition: all 0.2s;
-}
+                .is-valid {
+                    border-color: #28a745 !important;
+                }
 
-.form-label {
-    margin-bottom: 0.5rem;
-}
+                .is-invalid {
+                    border-color: #dc3545 !important;
+                }
 
-.input-group-prepend .input-group-text {
-    background-color: #f8f9fa;
-    border-color: #ced4da;
-}
+                .badge.cursor-pointer:hover {
+                    opacity: 0.8;
+                    transform: scale(1.05);
+                    transition: all 0.2s;
+                }
 
-.card-header {
-    border-radius: 10px 10px 0 0 !important;
-}
-</style>
+                .form-label {
+                    margin-bottom: 0.5rem;
+                }
+
+                .input-group-prepend .input-group-text {
+                    background-color: #f8f9fa;
+                    border-color: #ced4da;
+                }
+
+                .card-header {
+                    border-radius: 10px 10px 0 0 !important;
+                }
+                </style>
 
 {% endblock content %}

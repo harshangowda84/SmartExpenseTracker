@@ -4,11 +4,8 @@
 		{
 			"label": "Run Django Development Server",
 			"type": "shell",
-			"command": "\"D:/Project/Expense Tracker New/.venv/Scripts/python.exe\"",
-			"args": [
-				"manage.py",
-				"runserver"
-			],
+	"command": "& \"D:/Project/Expense Tracker New/.venv/Scripts/python.exe\" \"manage.py\" \"runserver\"",
+	"args": [],
 			"group": "build",
 			"isBackground": true,
 			"problemMatcher": []

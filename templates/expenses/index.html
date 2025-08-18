@@ -15,11 +15,11 @@
             </nav>
         </div>
         <div class="col-md-4 text-right">
-            <a href="{% url 'add-expenses' %}" class="btn btn-primary btn-lg mb-2 btn-pulse">
+            <a href="{% url 'expenses:add-expenses' %}" class="btn btn-primary btn-lg mb-2 btn-pulse">
                 <i class="fas fa-plus"></i> Add Expense
             </a>
             <br>
-            <a href="{% url 'stats' %}" class="btn btn-outline-info">
+            <a href="{% url 'expenses:stats' %}" class="btn btn-outline-info">
                 <i class="fas fa-chart-bar"></i> View Stats
             </a>
             <a href="/forecast/" class="btn btn-outline-success">
@@ -183,7 +183,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{% url 'expense-edit' expense.id %}" 
+                                        <a href="{% url 'expenses:expense-edit' expense.id %}" 
                                            class="btn btn-outline-primary" data-toggle="tooltip" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -526,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </style>
 
 <!-- Floating Action Button -->
-<a href="{% url 'add-expenses' %}" class="btn btn-primary btn-floating" data-toggle="tooltip" title="Quick Add Expense">
+<a href="{% url 'expenses:add-expenses' %}" class="btn btn-primary btn-floating" data-toggle="tooltip" title="Quick Add Expense">
     <i class="fas fa-plus"></i>
 </a>
 
